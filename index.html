@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Horario y tareas · 2º DAM</title>
+<meta name="theme-color" content="#0b7570">
+<meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="2º DAM"><meta name="apple-mobile-web-app-status-bar-style" content="default">
+<style>
+:root{--bg:#f4f5f2;--card:#fff;--tx:#1d2420;--mu:#6b7570;--bd:#d8dcd6;--ac:#0b7570;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#171a18;--card:#222623;--tx:#e8ece9;--mu:#99a39d;--bd:#3a403c;--ac:#3fb8b1}}
+:root[data-theme="dark"]{--bg:#171a18;--card:#222623;--tx:#e8ece9;--mu:#99a39d;--bd:#3a403c;--ac:#3fb8b1}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.4 system-ui,-apple-system,Segoe UI,sans-serif}
+main{max-width:980px;margin:0 auto;padding:14px}
+h1{font-size:20px;margin:0 0 10px}
+nav{display:flex;gap:6px;margin-bottom:12px}
+nav button,.chip,.btn{border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:8px;padding:7px 12px;font:inherit;cursor:pointer}
+nav button.on,.chip.on,.btn.p{background:var(--ac);color:#fff;border-color:var(--ac)}
+.wrap{overflow-x:auto}
+.grid{display:grid;grid-template-columns:70px repeat(5,minmax(105px,1fr));grid-template-rows:32px repeat(6,64px);gap:3px;min-width:640px}
+.h{display:flex;align-items:center;justify-content:center;font-weight:600;color:var(--mu)}
+.t{font-size:11px;color:var(--mu);text-align:center;display:flex;flex-direction:column;justify-content:center}
+.b{border-radius:8px;color:#fff;padding:6px 8px;cursor:pointer;display:flex;flex-direction:column;justify-content:space-between;border:0;text-align:left;font:inherit;position:relative}
+.b strong{font-size:15px}.b small{opacity:.85;font-size:11px}
+.b .n{position:absolute;top:6px;right:6px;background:#fff;color:#222;border-radius:10px;font-size:11px;padding:0 6px;font-weight:700}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:12px;margin-bottom:10px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+input,select{border:1px solid var(--bd);background:var(--bg);color:var(--tx);border-radius:8px;padding:7px;font:inherit}
+input[type=text]{flex:1;min-width:150px}
+.task{display:flex;gap:10px;align-items:center;border-left:6px solid;padding:8px 10px;margin-bottom:6px;background:var(--card);border-radius:8px;border-top:1px solid var(--bd);border-right:1px solid var(--bd);border-bottom:1px solid var(--bd)}
+.task .i{flex:1;min-width:0}.task .m{color:var(--mu);font-size:12px}
+.task.d .tt{text-decoration:line-through;opacity:.6}
+.tag{font-size:11px;border-radius:6px;padding:1px 7px;font-weight:600;white-space:nowrap}
+.ok{background:#1f8a4c22;color:#1f8a4c}.warn{background:#d9980022;color:#b27a00}.bad{background:#d9363622;color:#d93636}
+.x{background:none;border:0;color:var(--mu);cursor:pointer;font-size:18px}
+.empty{color:var(--mu);text-align:center;padding:20px}
+.drop{border-style:dashed}.drop.over{outline:2px dashed var(--ac);background:var(--bg)}
+#msg ul{margin:8px 0 0;padding-left:18px}#msg li{margin:2px 0}#msg .s{font-weight:600}
+h1 .btn{font-size:13px;padding:4px 10px;margin-left:8px;vertical-align:middle}
+#alerta .a{border-radius:10px;padding:9px 12px;margin-bottom:10px;font-weight:600}
+#alerta .a.bad{background:#d9363622;color:var(--tx);border:1px solid #d93636}#alerta .a.warn{background:#d9980022;color:var(--tx);border:1px solid #b27a00}
+#hoy .cl{display:flex;gap:10px;align-items:center;padding:6px 0;border-bottom:1px solid var(--bd)}#hoy .cl:last-child{border:0}
+#hoy .dot{width:10px;height:36px;border-radius:5px;flex:none}#hoy .now{font-size:11px;font-weight:700;background:var(--ac);color:#fff;border-radius:6px;padding:1px 7px}
+.chip:focus-visible,.btn:focus-visible,nav button:focus-visible,.b:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+</style><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icons/apple-touch-icon.png"><link rel="icon" type="image/png" href="icons/icon-192.png"></head><body><main>
+<h1>📅 Horario y tareas · 2º DAM <button class="btn" id="inst" type="button" hidden>📲 Instalar</button></h1>
+<nav><button id="n1" class="on">Horario</button><button id="n2">Tareas</button></nav>
+<div id="alerta" aria-live="polite"></div>
+<section id="v1"><div class="card" id="hoy"></div><div class="wrap"><div class="grid" id="grid"></div></div>
+<p class="m" style="color:var(--mu);font-size:12px">Toca una asignatura para ver y añadir sus tareas. El número indica las pendientes.</p></section>
+<section id="v2" hidden>
+<div class="card drop" id="drop"><div class="row">
+<button class="btn" id="imp" type="button">📥 Importar calendario de Moodle (.ics)</button>
+<input type="file" id="ics" accept=".ics,text/calendar" hidden>
+<span style="color:var(--mu);font-size:12px">o arrastra aquí tu <b>icalexport.ics</b>. Se procesa en tu navegador; no se envía a ningún sitio.</span></div>
+<div id="msg" aria-live="polite"></div></div>
+<div class="card"><div class="row">
+<button class="btn" id="exp" type="button">⬇ Exportar copia</button>
+<button class="btn" id="imp2b" type="button">⬆ Importar copia</button><input type="file" id="imp2" accept=".json,application/json" hidden>
+<button class="btn" id="bell" type="button">🔔 Activar avisos</button></div>
+<p id="cmsg" style="color:var(--mu);font-size:12px;margin:8px 0 0">Tus tareas se guardan solo en este dispositivo: usa <b>Exportar copia</b> para pasarlas a otro o guardarlas. Los avisos salen al abrir la app y mientras está abierta; con la app cerrada el móvil no puede avisarte.</p></div>
+<div class="card"><div class="row">
+<input type="text" id="ti" placeholder="Nueva tarea, trabajo o examen…">
+<select id="su"></select>
+<select id="ty"><option>Tarea</option><option>Trabajo</option><option>Examen</option></select>
+<input type="datetime-local" id="du">
+<button class="btn p" id="add">Añadir</button></div></div>
+<div class="row" id="chips" style="margin-bottom:10px"></div>
+<div id="list"></div></section>
+<script>
+// colores con contraste ≥ 4.5 sobre texto blanco
+const S={Opt:["Optativa (Aplicaciones Híbridas)","#b8453c"],DIN:["Desarrollo de Interfaces","#6e3a33"],ADA:["Acceso a Datos","#4f2670"],SGE:["Sistemas de Gestión Empresarial","#5e2d79"],"IPE II":["Itinerario Personal para la Empleabilidad II","#0b7570"],PSP:["Servicios y Procesos","#c24a4a"],PMDM:["Programación Multimedia y Móviles","#8a4a42"],INGPRO:["Inglés Profesional","#806400"],PI:["Proyecto Intermodular","#667000"]};
+const sub=k=>S[k]||["Asignatura desconocida","#555"];  // evita que falle si una tarea guardada tiene una asignatura que ya no existe
+const T=["15:30","16:30","17:30","18:45","19:45","20:45"];
+// [día,fila inicio,filas,asignatura,profesor]
+const H=[[1,1,3,"Opt","JJR"],[1,4,1,"DIN","JVM"],[1,5,2,"ADA","AMV"],[2,1,2,"SGE","MV/M"],[2,3,2,"DIN","JVM"],[2,5,2,"IPE II","MOP"],[3,1,3,"DIN","JVM"],[3,4,3,"PSP","JJR"],[4,1,3,"PMDM","MM"],[4,4,2,"INGPRO","OFL"],[4,6,1,"IPE II","MOP"],[5,1,2,"SGE","MV/M"],[5,3,2,"ADA","AHV"],[5,5,2,"PI","PFC"]];
+let tasks=[],flt="";
+try{tasks=JSON.parse(localStorage.getItem("tareas")||"[]")}catch(e){}
+const save=()=>{try{localStorage.setItem("tareas",JSON.stringify(tasks))}catch(e){}};
+const $=i=>document.getElementById(i);
+const esc=s=>s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function tab(n){$("v1").hidden=n!=1;$("v2").hidden=n!=2;$("n1").className=n==1?"on":"";$("n2").className=n==2?"on":""}
+$("n1").onclick=()=>tab(1);$("n2").onclick=()=>tab(2);
+function grid(){let h='<div></div>'+["Lu","Ma","Mi","Ju","Vi"].map((d,i)=>`<div class="h" style="grid-column:${i+2};grid-row:1">${d}</div>`).join("");
+T.forEach((t,i)=>h+=`<div class="t" style="grid-column:1;grid-row:${i+2}"><b>${i+1}ª</b>${t}</div>`);
+H.forEach(([d,r,n,s,p])=>{const c=tasks.filter(x=>x.s==s&&!x.done).length;
+h+=`<button class="b" data-s="${s}" style="grid-column:${d+1};grid-row:${r+1}/span ${n};background:${sub(s)[1]}" title="${esc(sub(s)[0])}"><strong>${s}</strong><small>${p}</small>${c?`<span class="n">${c}</span>`:""}</button>`});
+$("grid").innerHTML=h;
+document.querySelectorAll(".b").forEach(b=>b.onclick=()=>{flt=b.dataset.s;$("su").value=flt;tab(2);list()})}
+function left(due){const ms=new Date(due)-Date.now(),a=Math.abs(ms),d=Math.floor(a/864e5),h=Math.floor(a%864e5/36e5),m=Math.floor(a%36e5/6e4);
+const t=d?`${d}d ${h}h`:h?`${h}h ${m}min`:`${m}min`;return ms<0?["Vencida hace "+t,"bad"]:[ "Quedan "+t,ms<2*864e5?"warn":"ok"]}
+function list(){
+$("chips").innerHTML=`<button class="chip ${flt?"":"on"}" data-s="">Todas</button>`+Object.keys(S).map(s=>`<button class="chip ${flt==s?"on":""}" data-s="${s}">${s}</button>`).join("");
+document.querySelectorAll(".chip").forEach(c=>c.onclick=()=>{flt=c.dataset.s;list()});
+const l=tasks.filter(t=>!flt||t.s==flt).sort((a,b)=>a.done-b.done||new Date(a.due)-new Date(b.due));
+$("list").innerHTML=l.length?l.map(t=>{const[x,k]=t.done?["Entregado","ok"]:t.due?left(t.due):["Sin fecha","warn"];
+return `<div class="task ${t.done?"d":""}" style="border-left-color:${sub(t.s)[1]}"><input type="checkbox" ${t.done?"checked":""} data-id="${t.id}" title="Marcar como entregado"><div class="i"><div class="tt"><b>${esc(t.t)}</b></div><div class="m">${esc(String(t.s))} · ${esc(String(t.ty))}${t.due?" · "+new Date(t.due).toLocaleString("es-ES",{dateStyle:"medium",timeStyle:"short"}):""}${t.mid?" · 📥 Moodle":""}</div></div><span class="tag ${k}">${x}</span><button class="x" data-del="${t.id}" title="Eliminar">×</button></div>`}).join(""):'<div class="empty">No hay tareas todavía.</div>';
+document.querySelectorAll("[data-id]").forEach(c=>c.onchange=()=>{const t=tasks.find(x=>x.id==c.dataset.id);t.done=c.checked;save();list();grid()});
+document.querySelectorAll("[data-del]").forEach(c=>c.onclick=()=>{tasks=tasks.filter(x=>x.id!=c.dataset.del);save();list();grid()});alerta()}
+$("su").innerHTML=Object.keys(S).map(s=>`<option value="${s}">${s}</option>`).join("");
+$("add").onclick=()=>{const t=$("ti").value.trim();if(!t)return;tasks.push({id:Date.now(),t,s:$("su").value,ty:$("ty").value,due:$("du").value,done:false});$("ti").value="";save();list();grid()};
+// ICS-BEGIN  (importar el calendario de Moodle: mismas reglas que _tools/moodle_sync.py)
+const CID={"6250":"ADA","4415":"DIN","4416":"PMDM","934":"PSP","2257":"SGE","6847":"IPE II","4749":"INGPRO","1099":"PI","2081":"Opt","4 pi":"PI"};
+const KEYS=[["SGE",/gesti[oó]n empresarial/i],["DIN",/interfaces/i],["PMDM",/multimedia|dispositivos m[oó]viles/i],["ADA",/acceso a datos/i],["PSP",/servicios y procesos/i],["IPE II",/itinerario personal/i],["INGPRO",/ingl[eé]s profesional/i],["PI",/proyecto intermodular/i],["Opt",/optativa|h[ií]bridas/i]];
+const EXAM=/\b(examen|exámenes|examenes|prueba escrita|prueba práctica|prueba practica|parcial|recuperaci[oó]n|control)\b/i;
+const DUE_PRE=/^\s*(vencimiento de|cierre de|fecha l[ií]mite de)\s+/i,OPEN_PRE=/^\s*(apertura de|abre)\s+/i;
+const OPEN_SUF=/\s+(abre|se abre|opens?|opening)\s*$/i,DUE_SUF=/\s+(vence|está en fecha de entrega|esta en fecha de entrega|cierra|se cierra|closes?|is due|due)\s*$/i;
+const TASKISH=/entrega|tarea|pr[aá]ctica|trabajo|bolet[ií]n|actividad/i;
+const unesc=v=>v.replace(/\\[nN]/g,"\n").replace(/\\,/g,",").replace(/\\;/g,";").replace(/\\\\/g,"\\");
+function icsParse(txt){const L=txt.replace(/\r?\n[ \t]/g,"").split(/\r?\n/),ev=[];let c=null;
+for(const l of L){if(l==="BEGIN:VEVENT")c={};else if(l==="END:VEVENT"){if(c)ev.push(c);c=null}
+else if(c&&l.includes(":")){const i=l.indexOf(":");c[l.slice(0,i).split(";")[0].toUpperCase()]=unesc(l.slice(i+1))}}return ev}
+function icsDate(v){const m=/^(\d{4})(\d{2})(\d{2})(?:T(\d{2})(\d{2})(\d{2}))?(Z)?$/.exec((v||"").trim());if(!m)return null;
+const[,y,mo,d,h="00",mi="00",s="00",z]=m;return z?new Date(Date.UTC(+y,mo-1,+d,+h,+mi,+s)):new Date(+y,mo-1,+d,+h,+mi,+s)}
+const p2=n=>String(n).padStart(2,"0");
+const localStr=d=>`${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}T${p2(d.getHours())}:${p2(d.getMinutes())}`;
+function icsSubject(cat,text){for(const k of (cat||"").trim().toLowerCase().split(/\s*,\s*/))if(CID[k])return CID[k];
+const b=(cat||"")+" "+(text||"");for(const[k,re]of KEYS)if(re.test(b))return k;return null}
+function icsEvents(txt){const out=[];for(const e of icsParse(txt)){const d=icsDate(e.DTSTART||e.DUE);if(!d)continue;
+const raw=(e.SUMMARY||"").trim(),opens=OPEN_SUF.test(raw)||OPEN_PRE.test(raw),due=DUE_SUF.test(raw)||DUE_PRE.test(raw);
+const title=raw.replace(OPEN_SUF,"").replace(OPEN_PRE,"").replace(DUE_SUF,"").replace(DUE_PRE,"").trim()||raw;
+const exam=EXAM.test(title)||EXAM.test((e.DESCRIPTION||"").slice(0,200));
+out.push({uid:e.UID||raw+(e.DTSTART||""),title,s:icsSubject(e.CATEGORIES,raw+" "+(e.DESCRIPTION||"")),date:d,opens,exam,task:(due||TASKISH.test(title))&&!opens&&!exam})}return out}
+// fusiona los eventos con las tareas existentes sin duplicar ni tocar lo que ya marcaste
+function icsMerge(tasks,evs,now=new Date(),staleDays=7){const r={nuevas:[],cambiadas:[],existentes:0,adoptadas:0,ignoradas:0,sinAsig:[]};
+const best=new Map();for(const e of evs.filter(e=>e.exam)){const k=e.s+"|"+e.title.toLowerCase();if(!best.has(k)||e.date<best.get(k).date)best.set(k,e)}
+const use=evs.filter(e=>e.task).concat([...best.values()]);
+for(const e of use){if(!e.s){r.sinAsig.push(e.title);continue}
+const id="m:"+e.uid,due=localStr(e.date),x=tasks.find(t=>t.mid===id);
+if(x){if(x.due!==due){r.cambiadas.push(`${e.title}: ${(x.due||"").slice(0,10)} → ${due.slice(0,10)}`);x.due=due}else r.existentes++;continue}
+const a=tasks.find(t=>!t.mid&&t.s===e.s&&(t.due||"").slice(0,10)===due.slice(0,10));
+if(a){a.mid=id;r.adoptadas++;continue}
+if((now-e.date)/864e5>staleDays){r.ignoradas++;continue}
+const n={id:Date.now()+tasks.length,t:e.title,s:e.s,ty:e.exam?"Examen":/trabajo/i.test(e.title)?"Trabajo":"Tarea",due,done:false,mid:id};
+tasks.push(n);r.nuevas.push(n)}
+return r}
+// ICS-END
+function icsReport(r,total){const li=a=>a.map(x=>`<li>${esc(x)}</li>`).join("");
+let h=`<div class="s">Calendario leído: ${total} evento${total==1?"":"s"}.</div><ul>`;
+h+=`<li>🆕 ${r.nuevas.length} nueva${r.nuevas.length==1?"":"s"}${r.nuevas.length?": "+esc(r.nuevas.map(t=>t.s+" · "+t.t).join(" · ")):""}</li>`;
+if(r.cambiadas.length)h+=`<li>🔄 ${r.cambiadas.length} con fecha cambiada:<ul>${li(r.cambiadas)}</ul></li>`;
+h+=`<li>✔ ${r.existentes} ya estaban al día${r.adoptadas?`, ${r.adoptadas} enlazada${r.adoptadas==1?"":"s"} con tareas que ya tenías`:""}${r.ignoradas?`, ${r.ignoradas} antigua${r.ignoradas==1?"":"s"} ignorada${r.ignoradas==1?"":"s"}`:""}.</li>`;
+if(r.sinAsig.length)h+=`<li>❓ Sin asignatura reconocida (no importadas):<ul>${li(r.sinAsig)}</ul></li>`;
+return h+"</ul>"}
+async function importIcs(f){const m=$("msg");if(!f)return;
+try{const txt=await f.text();if(!/BEGIN:VCALENDAR/.test(txt)){m.innerHTML='<div class="s">⚠️ Ese archivo no parece un calendario .ics de Moodle.</div>';return}
+const evs=icsEvents(txt),r=icsMerge(tasks,evs);save();list();grid();m.innerHTML=icsReport(r,evs.length)}
+catch(e){m.innerHTML='<div class="s">⚠️ No se pudo leer el archivo.</div>'}}
+$("imp").onclick=()=>$("ics").click();
+$("ics").onchange=e=>{importIcs(e.target.files[0]);e.target.value=""};
+const dz=$("drop");["dragenter","dragover"].forEach(v=>dz.addEventListener(v,e=>{e.preventDefault();dz.classList.add("over")}));
+["dragleave","drop"].forEach(v=>dz.addEventListener(v,e=>{e.preventDefault();dz.classList.remove("over")}));
+dz.addEventListener("drop",e=>importIcs(e.dataTransfer.files[0]));
+// ---- uso en móvil: hoy, urgentes, copia de seguridad, avisos e instalación
+const END=["16:30","17:30","18:30","19:45","20:45","21:45"],DIAS=["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
+const hm=s=>{const[a,b]=s.split(":");return +a*60+ +b};
+function hoy(now=new Date()){const d=now.getDay(),cur=now.getHours()*60+now.getMinutes();
+const cl=H.filter(x=>x[0]==d).map(([,r,n,s,p])=>({s,p,a:T[r-1],b:END[r+n-2]})).sort((x,y)=>hm(x.a)-hm(y.a));
+$("hoy").innerHTML=`<b>Hoy · ${DIAS[d]}</b>`+(cl.length?cl.map(c=>`<div class="cl"><span class="dot" style="background:${sub(c.s)[1]}"></span><div style="flex:1"><b>${esc(c.s)}</b> <span style="color:var(--mu)">${esc(sub(c.s)[0])} · ${esc(c.p)}</span></div><div>${c.a}–${c.b}${hm(c.a)<=cur&&cur<hm(c.b)?' <span class="now">AHORA</span>':""}</div></div>`).join(""):'<div class="cl" style="color:var(--mu)">Sin clase hoy.</div>')}
+function urgent(now=new Date(),h=48){return tasks.filter(t=>{if(t.done||!t.due)return false;const ms=new Date(t.due)-now;return ms<h*36e5&&ms>-7*864e5}).sort((a,b)=>new Date(a.due)-new Date(b.due))}
+function alerta(now=new Date()){const u=urgent(now);if(!u.length){$("alerta").innerHTML="";return}
+const v=u.filter(t=>new Date(t.due)<now).length,cls=v||u.some(t=>new Date(t.due)-now<864e5)?"bad":"warn";
+$("alerta").innerHTML=`<div class="a ${cls}">⚠️ ${u.length} tarea${u.length==1?"":"s"} urgente${u.length==1?"":"s"}${v?` (${v} vencida${v==1?"":"s"})`:""}: ${esc(u.slice(0,3).map(t=>t.s+" · "+t.t).join(" · "))}${u.length>3?"…":""}</div>`}
+function exportJson(){const b=new Blob([JSON.stringify({v:1,fecha:new Date().toISOString(),tasks},null,1)],{type:"application/json"});
+const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=`tareas-2dam-${localStr(new Date()).slice(0,10)}.json`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1e3)}
+function mergeBackup(o){const arr=Array.isArray(o)?o:o&&o.tasks;if(!Array.isArray(arr))return null;const r={nuevas:0,actualizadas:0,omitidas:0};
+for(const x of arr){if(!x||typeof x.t!=="string"||typeof x.s!=="string"){r.omitidas++;continue}
+const y=tasks.find(t=>(x.mid&&t.mid===x.mid)||t.id===x.id);
+if(y){if(x.done&&!y.done){y.done=true;r.actualizadas++}else r.omitidas++;continue}
+tasks.push({id:x.id||Date.now()+tasks.length,t:x.t,s:x.s,ty:x.ty||"Tarea",due:x.due||"",done:!!x.done,...(x.mid?{mid:x.mid}:{})});r.nuevas++}return r}
+function cres(h){let e=$("cres");if(!e){e=document.createElement("div");e.id="cres";e.setAttribute("aria-live","polite");e.style.cssText="font-size:13px;margin-top:8px";$("cmsg").after(e)}e.innerHTML=h}
+async function importBackup(f){if(!f)return;try{const r=mergeBackup(JSON.parse(await f.text()));
+if(!r){cres("⚠️ Ese archivo no parece una copia de tareas.");return}
+save();list();grid();cres(`✔ Copia importada: ${r.nuevas} nueva${r.nuevas==1?"":"s"}, ${r.actualizadas} marcada${r.actualizadas==1?"":"s"} como hecha${r.actualizadas==1?"":"s"}, ${r.omitidas} ya estaban.`)}
+catch(e){cres("⚠️ No se pudo leer la copia.")}}
+function showNote(title,opt){if(navigator.serviceWorker&&navigator.serviceWorker.getRegistration)navigator.serviceWorker.getRegistration().then(r=>r?r.showNotification(title,opt):new Notification(title,opt)).catch(()=>{});else try{new Notification(title,opt)}catch(e){}}
+function notifyDue(now=new Date()){if(!("Notification" in window)||Notification.permission!=="granted")return;try{if(localStorage.getItem("avisos")!=="1")return}catch(e){return}
+let seen={};try{seen=JSON.parse(localStorage.getItem("notificados")||"{}")}catch(e){}
+const day=localStr(now).slice(0,10);
+for(const t of urgent(now,24)){const k=t.id+"@"+day;if(seen[k])continue;seen[k]=1;
+showNote("📅 "+t.s+" · "+t.t,{body:left(t.due)[0]+" · "+new Date(t.due).toLocaleString("es-ES",{dateStyle:"medium",timeStyle:"short"}),tag:String(t.id)})}
+try{localStorage.setItem("notificados",JSON.stringify(seen))}catch(e){}}
+async function bell(){if(!("Notification" in window)){cres("⚠️ Este navegador no admite avisos.");return}
+const p=await Notification.requestPermission();try{localStorage.setItem("avisos",p==="granted"?"1":"0")}catch(e){}
+bellLabel();notifyDue()}
+function bellLabel(){const ok="Notification" in window&&Notification.permission==="granted"&&localStorage.getItem("avisos")==="1";
+$("bell").textContent=ok?"🔔 Avisos activados":"🔔 Activar avisos"}
+let dp=null;addEventListener("beforeinstallprompt",e=>{e.preventDefault();dp=e;$("inst").hidden=false});
+$("inst").onclick=async()=>{if(!dp)return;dp.prompt();try{await dp.userChoice}catch(e){}dp=null;$("inst").hidden=true};
+addEventListener("appinstalled",()=>{$("inst").hidden=true});
+$("exp").onclick=exportJson;$("imp2b").onclick=()=>$("imp2").click();$("imp2").onchange=e=>{importBackup(e.target.files[0]);e.target.value=""};$("bell").onclick=bell;
+try{const ios=/iphone|ipad|ipod/i.test(navigator.userAgent),st=navigator.standalone||(window.matchMedia&&matchMedia("(display-mode: standalone)").matches);
+if(ios&&!st)$("cmsg").insertAdjacentHTML("beforeend"," <b>En iPhone/iPad:</b> para instalarla pulsa Compartir → «Añadir a pantalla de inicio».");bellLabel()}catch(e){}
+document.addEventListener("visibilitychange",()=>{if(!document.hidden){hoy();list();notifyDue()}});
+grid();list();hoy();notifyDue();setInterval(()=>{list();hoy();notifyDue()},6e4);
+</script></main><script>if("serviceWorker"in navigator&&location.protocol.startsWith("http"))addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}))</script></body></html>
